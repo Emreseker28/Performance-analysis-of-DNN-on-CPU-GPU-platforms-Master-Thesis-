@@ -1,82 +1,72 @@
 #%%
-import pandas as pd
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-import torch
+# multivariate multi-headed 1d cnn example
+from numpy import array
+from numpy import hstack
+from keras.models import Model
+from keras.layers import Input
+from keras.layers import Dense
+from keras.layers import Flatten
+from keras.layers import Concatenate
+from keras.layers.convolutional import Conv1D
+from keras.layers.convolutional import MaxPooling1D
+#from keras.layers.merge import concatenate
 
-train_data = pd.read_csv('C:\\Users\\Emre\\Desktop\\Projects\\cavity\\cavity1.0\\0.1\\p')
-train_data = train_data.iloc[19:419, :]
-print(train_data)
-test_data = pd.read_csv('C:\\Users\\Emre\\Desktop\\Projects\\cavity\\cavity4.0\\0.1\\p')
-test_data = test_data.iloc[19:419, :]
+# split a multivariate sequence into samples
+def split_sequences(sequences, n_steps):
+	X, y = list(), list()
+	for i in range(len(sequences)):
+		# find the end of this pattern
+		end_ix = i + n_steps
+		# check if we are beyond the dataset
+		if end_ix > len(sequences):
+			break
+		# gather input and output parts of the pattern
+		seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1, -1]
+		X.append(seq_x)
+		y.append(seq_y)
+	return array(X), array(y)
 
-#%%
-# Define the CNN model
-def CNN():
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(400, activation='relu'),
-        tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(1, activation='sigmoid')
-    ])
-    return model
-
-#%%
-def preprocess_data(data):
-    # Normalize the data
-    normalized_data = (data - np.mean(data)) / np.std(data)
-    
-    # Reshape the data to match the input shape of the CNN
-    train_data_np = normalized_data.values.astype(np.float32)  # Convert DataFrame to NumPy array with float32 data type
-    
-    return train_data_np
-
-preprocessed_train_data = preprocess_data(train_data)
-
-# Create the CNN model
-model = CNN()
-
-# Compile the model
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-# Train the model
-model.fit(preprocessed_train_data, test_data, epochs=10, batch_size=32)
-
-#history = model.fit(preprocessed_train_data, train_labels, epochs=10, batch_size=32)
-epochs = 30
-steps = 150
-print("Train")
-for epoche in range(epochs):
-    err = 0.
-    for step in range(steps):
-        inputs, labels = next(iter(train_data))
-        outputs = model(inputs)
-
-
-#%%
-# Plot the training loss
-plt.plot(history.history['loss'])
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.show()
-
-# Plot the training accuracy
-plt.plot(history.history['accuracy'])
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.show()
-
-#%%
-
-print(test_data)
-# Preprocess the test data
-preprocessed_test_data = preprocess_data(test_data)
-
-# Make predictions
-predictions = model.predict(preprocessed_test_data)
-
-# Print the predictions
-print(predictions)
-
-
+# define input sequence
+in_seq1 = array([10, 20, 30, 40, 50, 60, 70, 80, 90])
+in_seq2 = array([15, 25, 35, 45, 55, 65, 75, 85, 95])
+out_seq = array([in_seq1[i]+in_seq2[i] for i in range(len(in_seq1))])
+# convert to [rows, columns] structure
+in_seq1 = in_seq1.reshape((len(in_seq1), 1))
+in_seq2 = in_seq2.reshape((len(in_seq2), 1))
+out_seq = out_seq.reshape((len(out_seq), 1))
+# horizontally stack columns
+dataset = hstack((in_seq1, in_seq2, out_seq))
+# choose a number of time steps
+n_steps = 3
+# convert into input/output
+X, y = split_sequences(dataset, n_steps)
+# one time series per head
+n_features = 1
+# separate input data
+X1 = X[:, :, 0].reshape(X.shape[0], X.shape[1], n_features)
+X2 = X[:, :, 1].reshape(X.shape[0], X.shape[1], n_features)
+# first input model
+visible1 = Input(shape=(n_steps, n_features))
+cnn1 = Conv1D(filters=64, kernel_size=2, activation='relu')(visible1)
+cnn1 = MaxPooling1D(pool_size=2)(cnn1)
+cnn1 = Flatten()(cnn1)
+# second input model
+visible2 = Input(shape=(n_steps, n_features))
+cnn2 = Conv1D(filters=64, kernel_size=2, activation='relu')(visible2)
+cnn2 = MaxPooling1D(pool_size=2)(cnn2)
+cnn2 = Flatten()(cnn2)
+# merge input models
+merge = Concatenate(axis=1)([cnn1, cnn2])
+dense = Dense(50, activation='relu')(merge)
+output = Dense(1)(dense)
+model = Model(inputs=[visible1, visible2], outputs=output)
+model.compile(optimizer='adam', loss='mse')
+# fit model
+model.fit([X1, X2], y, epochs=1000, verbose=0)
+# demonstrate prediction
+x_input = array([[80, 85], [90, 95], [100, 105]])
+x1 = x_input[:, 0].reshape((1, n_steps, n_features))
+x2 = x_input[:, 1].reshape((1, n_steps, n_features))
+yhat = model.predict([x1, x2], verbose=0)
+print(yhat)
 # %%
