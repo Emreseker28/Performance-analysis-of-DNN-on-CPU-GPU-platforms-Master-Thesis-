@@ -1,5 +1,6 @@
 #%%
 # multivariate multi-headed 1d cnn example
+import pandas as pd
 from numpy import array
 from numpy import hstack
 from keras.models import Model
@@ -26,9 +27,20 @@ def split_sequences(sequences, n_steps):
 		y.append(seq_y)
 	return array(X), array(y)
 
+#import data
+data1 = pd.read_csv('./cavity1.0/0.1/p')
+data2 = pd.read_csv('./cavity1.0/0.2/p')
+#print(data1)
+#print(data2)
+
+#take only the values from the files
+in_seq1 = data1.iloc[22:419,:].values
+in_seq2 = data2.iloc[22:419, :].values
+in_seq1 = in_seq1.astype(float)
+in_seq2 = in_seq2.astype(float)
 # define input sequence
-in_seq1 = array([10, 20, 30, 40, 50, 60, 70, 80, 90])
-in_seq2 = array([15, 25, 35, 45, 55, 65, 75, 85, 95])
+#in_seq1 = array([10, 20, 30, 40, 50, 60, 70, 80, 90])
+#in_seq2 = array([15, 25, 35, 45, 55, 65, 75, 85, 95])
 out_seq = array([in_seq1[i]+in_seq2[i] for i in range(len(in_seq1))])
 # convert to [rows, columns] structure
 in_seq1 = in_seq1.reshape((len(in_seq1), 1))
@@ -64,7 +76,8 @@ model.compile(optimizer='adam', loss='mse')
 # fit model
 model.fit([X1, X2], y, epochs=1000, verbose=0)
 # demonstrate prediction
-x_input = array([[80, 85], [90, 95], [100, 105]])
+#inputs are from cavity5.0/0.1/p
+x_input = array([[-0.029824, -0.0651268], [-0.0916942, -0.102259], [-0.093978, -0.0664518]])
 x1 = x_input[:, 0].reshape((1, n_steps, n_features))
 x2 = x_input[:, 1].reshape((1, n_steps, n_features))
 yhat = model.predict([x1, x2], verbose=0)
