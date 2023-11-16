@@ -224,4 +224,12 @@ model.fit(X, y, epochs=100, verbose=1)
 
 yhat = model.predict(test, verbose=1)
 print(yhat)
+
+#Testing the accuracy of the model
+from sklearn.metrics import mean_squared_error
+#Reshaping the test data to fit the output of the program.
+test_flattened = test.reshape(-1, test.shape[-1]) # ndarray (6,400)
+yhat_flattened = yhat.reshape(-1, yhat.shape[-1]) # ndarray (3, 400)
+mse = mean_squared_error(test_flattened[:3, :], yhat_flattened) #taking the first 3 rows to match the sizes
+print('MSE: ', mse)
 # %%
