@@ -174,21 +174,21 @@ for i in range(samples):
 	
 for j in range(test_samples):
 	test.append(test_dataset[j:j+n_steps])
+
 X = np.array(X)
 n_features = X.shape[2]
 
 y = np.array(y).reshape( samples, 1, n_features )
 test = np.array(test)
 test = test.reshape(-1, 2, n_features)
+
 print('X.shape', X.shape)
 print('y.shape', y.shape)
-
-
 print('n_features', n_features)
 
-# separate input data
-#X1 = X[:, :, 0].reshape(X.shape[0], X.shape[1], n_features)
-#X2 = X[:, :, 1].reshape(X.shape[0], X.shape[1], n_features)
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 #move the model to a function
 # first input model
 #start from low number of filters, kernels and then start to increase
@@ -214,7 +214,7 @@ print(model.summary())
 #python profiler
 #start of the measuring
 # fit model
-model.fit(X, y, epochs=100, verbose=1)
+history = model.fit(X_train, y_train, epochs=100, verbose=1, validation_data=(X_test, y_test))
 #end of the measuring
 
 
@@ -227,9 +227,27 @@ print(yhat)
 
 #Testing the accuracy of the model
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 #Reshaping the test data to fit the output of the program.
 test_flattened = test.reshape(-1, test.shape[-1]) # ndarray (6,400)
 yhat_flattened = yhat.reshape(-1, yhat.shape[-1]) # ndarray (3, 400)
 mse = mean_squared_error(test_flattened[:3, :], yhat_flattened) #taking the first 3 rows to match the sizes
+mae = mean_absolute_error(test_flattened[:3, :], yhat_flattened)
 print('MSE: ', mse)
+print('MAE: ', mae)
+
+
+#plotting the figures
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+import matplotlib.pyplot as plt
+
+epochs = range(1, 101)
+
+plt.plot(epochs, loss, 'r', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+plt.show()
 # %%
