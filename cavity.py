@@ -250,4 +250,19 @@ plt.plot(epochs, val_loss, 'b', label='Validation loss')
 plt.title('Training and validation loss')
 plt.legend()
 plt.show()
+
+#pearson correlation
+from keras import backend as K
+def pearson_corr(y_true, y_pred):
+	mx = K.mean(K.constant(y_true), axis=0)
+	my = K.mean(K.constant(y_pred), axis=0)
+	xm, ym = K.constant(y_true) - mx, K.constant(y_pred) - my
+	r_num = K.sum(xm * ym)
+	y_true_square_sum = K.sum(xm * xm)
+	y_pred_square_sum = K.sum(ym * ym)
+	r_den = K.sqrt(y_true_square_sum * y_pred_square_sum)
+	r = r_num / r_den
+	return K.get_value(K.mean(r))
+
+print("Pearson Correlation: ", pearson_corr(test_flattened[:3, :], yhat_flattened))
 # %%
