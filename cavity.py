@@ -265,4 +265,14 @@ def pearson_corr(y_true, y_pred):
 	return K.get_value(K.mean(r))
 
 print("Pearson Correlation: ", pearson_corr(test_flattened[:3, :], yhat_flattened))
+
+#Spearman correlation
+from scipy.stats import spearmanr
+coef, p = spearmanr(test_flattened[:3, :], yhat_flattened)
+flat_coef, _ = spearmanr(test_flattened[:3, :].flatten(), yhat_flattened.flatten())
+print("Spearman Correlation: ", flat_coef)
+#Coefficient of determination R
+from sklearn.metrics import r2_score
+R_square = r2_score(test_flattened[:3, :], yhat_flattened)
+print("Coefficient of Determination: ", R_square)
 # %%
