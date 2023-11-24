@@ -10,6 +10,11 @@ from keras.layers import Concatenate
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D
 
+#constants
+EPOCHS = 100
+FILTER_SIZE = 64
+DENSE_SIZE = 64
+
 # split a multivariate sequence into samples
 '''
 def split_sequences(sequences, n_steps):
@@ -26,6 +31,27 @@ def split_sequences(sequences, n_steps):
 		y.append(seq_y)
 	return array(X), array(y)
 '''
+
+def machine_model(n_steps, n_features, filter_size, dense_size):
+	# first input model
+	#start from low number of filters, kernels and then start to increase
+	visible1 = Input(shape=(n_steps, n_features))
+	cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(visible1)
+	cnn1 = MaxPooling1D(pool_size=n_steps)(cnn1)
+	#cnn1 = Flatten()(cnn1)
+	# second input model
+	#visible2 = Input(shape=(n_steps, n_features))
+	cnn2 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
+	#cnn2 = MaxPooling1D(pool_size=2)(cnn2)
+	#flt = Flatten()(cnn2)
+	# merge input models
+	#merge = Concatenate(axis=1)([cnn1, cnn2])
+	dense = Dense(dense_size, activation='relu')(cnn2)
+	output = Dense(n_features)(dense)
+	model = Model(inputs=visible1, outputs=output)
+	model.compile(optimizer='adam', loss='mse')
+	return model
+
 #import data
 #to-do: find a way to get rid of repeating lines
 data1 = pd.read_csv('./cavity1.0/0.1/p')
@@ -189,24 +215,9 @@ print('n_features', n_features)
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-#move the model to a function
-# first input model
-#start from low number of filters, kernels and then start to increase
-visible1 = Input(shape=(n_steps, n_features))
-cnn1 = Conv1D(filters=64, kernel_size=1, activation='relu')(visible1)
-cnn1 = MaxPooling1D(pool_size=n_steps)(cnn1)
-#cnn1 = Flatten()(cnn1)
-# second input model
-#visible2 = Input(shape=(n_steps, n_features))
-cnn2 = Conv1D(filters=64, kernel_size=1, activation='relu')(cnn1)
-#cnn2 = MaxPooling1D(pool_size=2)(cnn2)
-#flt = Flatten()(cnn2)
-# merge input models
-#merge = Concatenate(axis=1)([cnn1, cnn2])
-dense = Dense(64, activation='relu')(cnn2)
-output = Dense(n_features)(dense)
-model = Model(inputs=visible1, outputs=output)
-model.compile(optimizer='adam', loss='mse')
+
+model = machine_model(n_steps=n_steps, n_features=n_features, 
+					  filter_size=FILTER_SIZE, dense_size=DENSE_SIZE)
 
 print(model.summary())
 
@@ -214,7 +225,7 @@ print(model.summary())
 #python profiler
 #start of the measuring
 # fit model
-history = model.fit(X_train, y_train, epochs=100, verbose=1, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
 #end of the measuring
 
 
@@ -243,10 +254,10 @@ val_loss = history.history['val_loss']
 
 import matplotlib.pyplot as plt
 
-epochs = range(1, 101)
+epochs_range = range(1, EPOCHS+1)
 
-plt.plot(epochs, loss, 'r', label='Training loss')
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.plot(epochs_range, loss, 'r', label='Training loss')
+plt.plot(epochs_range, val_loss, 'b', label='Validation loss')
 plt.title('Training and validation loss')
 plt.legend()
 plt.show()
