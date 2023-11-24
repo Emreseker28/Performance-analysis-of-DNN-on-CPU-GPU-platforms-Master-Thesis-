@@ -2,6 +2,8 @@
 # multivariate multi-headed 1d cnn example
 import pandas as pd
 import numpy as np
+import cProfile
+import re
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
@@ -221,11 +223,14 @@ model = machine_model(n_steps=n_steps, n_features=n_features,
 
 print(model.summary())
 
-#tensorflow profiler
-#python profiler
 #start of the measuring
+profiler = cProfile.Profile()
+profiler.enable()
 # fit model
 history = model.fit(X_train, y_train, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
+profiler.disable()
+profiler.print_stats(sort='cumulative')
+profiler.dump_stats('profiler_results.prof')
 #end of the measuring
 
 
@@ -292,4 +297,8 @@ print("Spearman Correlation: ", flat_coef)
 from sklearn.metrics import r2_score
 R_square = r2_score(test_flattened[:3, :], yhat_flattened)
 print("Coefficient of Determination: ", R_square)
+
+import pstats
+stats = pstats.Stats('profiler_results.prof')
+stats.sort_stats('cumulative').print_stats()
 # %%
