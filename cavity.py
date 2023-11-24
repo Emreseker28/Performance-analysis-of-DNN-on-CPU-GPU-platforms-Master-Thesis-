@@ -252,6 +252,7 @@ plt.legend()
 plt.show()
 
 #pearson correlation
+'''
 from keras import backend as K
 def pearson_corr(y_true, y_pred):
 	mx = K.mean(K.constant(y_true), axis=0)
@@ -265,12 +266,17 @@ def pearson_corr(y_true, y_pred):
 	return K.get_value(K.mean(r))
 
 print("Pearson Correlation: ", pearson_corr(test_flattened[:3, :], yhat_flattened))
+'''
+from scipy.stats import pearsonr
+coef_P, _ = pearsonr(test_flattened[:3, :].flatten(), yhat_flattened.flatten())
+print("Pearson Correlation: ", coef_P)
 
 #Spearman correlation
 from scipy.stats import spearmanr
 coef, p = spearmanr(test_flattened[:3, :], yhat_flattened)
 flat_coef, _ = spearmanr(test_flattened[:3, :].flatten(), yhat_flattened.flatten())
 print("Spearman Correlation: ", flat_coef)
+
 #Coefficient of determination R
 from sklearn.metrics import r2_score
 R_square = r2_score(test_flattened[:3, :], yhat_flattened)
