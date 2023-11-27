@@ -294,8 +294,9 @@ flat_coef, _ = spearmanr(test_flattened[:3, :].flatten(), yhat_flattened.flatten
 print("Spearman Correlation: ", flat_coef)
 
 #Coefficient of determination R
-from sklearn.metrics import r2_score
-R_square = r2_score(test_flattened[:3, :], yhat_flattened)
+#from sklearn.metrics import r2_score
+#R_square = r2_score(test_flattened[:3, :], yhat_flattened)
+R_square = coef_P * coef_P
 print("Coefficient of Determination: ", R_square)
 
 import pstats
