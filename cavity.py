@@ -17,22 +17,6 @@ EPOCHS = 100
 FILTER_SIZE = 64
 DENSE_SIZE = 64
 
-# split a multivariate sequence into samples
-'''
-def split_sequences(sequences, n_steps):
-	X, y = list(), list()
-	for i in range(len(sequences)):
-		# find the end of this pattern
-		end_ix = i + n_steps
-		# check if we are beyond the dataset
-		if end_ix > len(sequences):
-			break
-		# gather input and output parts of the pattern
-		seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1, -1]
-		X.append(seq_x)
-		y.append(seq_y)
-	return array(X), array(y)
-'''
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
 	# first input model
@@ -56,7 +40,7 @@ def machine_model(n_steps, n_features, filter_size, dense_size):
 
 #import data
 #to-do: find a way to get rid of repeating lines
-#1.0
+#to-do add U values.
 data1 = pd.read_csv('./cavity1.0/0.1/p')
 data2 = pd.read_csv('./cavity1.0/0.2/p')
 data3 = pd.read_csv('./cavity1.0/0.3/p')
@@ -203,8 +187,6 @@ test_data38 = pd.read_csv('./cavity3.9/0.3/p')
 test_data39 = pd.read_csv('./cavity3.9/0.4/p')
 test_data40 = pd.read_csv('./cavity3.9/0.5/p')
 #add new data with some noise added to it.
-#print(data1)
-#print(data2)
 
 #take only the values from the files
 in_seq1 = data1.iloc[19:419,:].values
@@ -646,9 +628,6 @@ print('test_dataset.shape', test_dataset.shape)
 
 # choose a number of time steps
 n_steps = 2
-# convert into input/output
-#X, y = split_sequences(dataset, n_steps)
-
 X = []
 y = []
 test = []
@@ -693,9 +672,6 @@ profiler.dump_stats('profiler_results.prof')
 
 
 # demonstrate prediction
-#take test data from cavity3.0
-
-
 yhat = model.predict(test, verbose=1)
 print(yhat)
 
@@ -726,21 +702,6 @@ plt.legend()
 plt.show()
 
 #pearson correlation
-'''
-from keras import backend as K
-def pearson_corr(y_true, y_pred):
-	mx = K.mean(K.constant(y_true), axis=0)
-	my = K.mean(K.constant(y_pred), axis=0)
-	xm, ym = K.constant(y_true) - mx, K.constant(y_pred) - my
-	r_num = K.sum(xm * ym)
-	y_true_square_sum = K.sum(xm * xm)
-	y_pred_square_sum = K.sum(ym * ym)
-	r_den = K.sqrt(y_true_square_sum * y_pred_square_sum)
-	r = r_num / r_den
-	return K.get_value(K.mean(r))
-
-print("Pearson Correlation: ", pearson_corr(test_flattened[:3, :], yhat_flattened))
-'''
 from scipy.stats import pearsonr
 coef_P, _ = pearsonr(test_flattened[:38, :].flatten(), yhat_flattened.flatten())
 print("Pearson Correlation: ", coef_P)
@@ -752,8 +713,6 @@ flat_coef, _ = spearmanr(test_flattened[:38, :].flatten(), yhat_flattened.flatte
 print("Spearman Correlation: ", flat_coef)
 
 #Coefficient of determination R
-#from sklearn.metrics import r2_score
-#R_square = r2_score(test_flattened[:3, :], yhat_flattened)
 R_square = coef_P * coef_P
 print("Coefficient of Determination: ", R_square)
 
