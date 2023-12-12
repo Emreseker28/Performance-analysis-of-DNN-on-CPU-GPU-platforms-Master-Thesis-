@@ -909,7 +909,7 @@ def machine_model(n_steps, n_features, filter_size, dense_size):
 	# merge input models
 	#merge = Concatenate(axis=1)([cnn1, cnn2])
 	dense = Dense(dense_size, activation='relu')(cnn2)
-	output = Dense(n_features)(dense)
+	output = Dense(n_features)(dense) #default activation function
 	model = Model(inputs=visible1, outputs=output)
 	model.compile(optimizer='adam', loss='mse')
 	return model
@@ -959,6 +959,7 @@ print(model.summary())
 profiler = cProfile.Profile()
 profiler.enable()
 # fit model
+#add batch size
 history = model.fit(X_train, y_train, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
 profiler.disable()
 profiler.print_stats(sort='cumulative')
@@ -1008,7 +1009,7 @@ flat_coef, _ = spearmanr(test_flattened[:76, :].flatten(), yhat_flattened.flatte
 print("Spearman Correlation: ", flat_coef)
 
 #Coefficient of determination R
-R_square = coef_P * coef_P
+R_square = np.absolute(coef_P * flat_coef) #R^2 cannot be a negative value
 print("Coefficient of Determination: ", R_square)
 
 import pstats
