@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import cProfile
 import re
+import tracemalloc
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
@@ -892,7 +893,7 @@ print('test_dataset.shape', test_dataset.shape)
 #constants
 EPOCHS = 100
 FILTER_SIZE = 64
-DENSE_SIZE = 128
+DENSE_SIZE = 64
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
 	# first input model
@@ -956,18 +957,24 @@ model = machine_model(n_steps=n_steps, n_features=n_features,
 print(model.summary())
 
 #start of the measuring
+#time measuring in python
 profiler = cProfile.Profile()
 profiler.enable()
+tracemalloc.start()
 # fit model
 #add batch size
 history = model.fit(X_train, y_train, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
+print("Memory Usage: ")
+print(tracemalloc.get_traced_memory())
+tracemalloc.stop()
 profiler.disable()
-profiler.print_stats(sort='cumulative')
+#profiler.print_stats(sort='cumulative')
 profiler.dump_stats('profiler_results.prof')
 #end of the measuring
 
 
 # demonstrate prediction
+#here as well
 yhat = model.predict(test, verbose=1)
 print(yhat)
 
