@@ -3,8 +3,8 @@
 import pandas as pd
 import numpy as np
 import cProfile
-import re
 import tracemalloc
+import tensorflow as tf
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
@@ -894,6 +894,8 @@ print('test_dataset.shape', test_dataset.shape)
 EPOCHS = 100
 FILTER_SIZE = 64
 DENSE_SIZE = 64
+BATCH_SIZE = 32 #Default is 32
+ITERATION = 1
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
 	# first input model
@@ -910,7 +912,7 @@ def machine_model(n_steps, n_features, filter_size, dense_size):
 	# merge input models
 	#merge = Concatenate(axis=1)([cnn1, cnn2])
 	dense = Dense(dense_size, activation='relu')(cnn2)
-	output = Dense(n_features)(dense) #default activation function
+	output = Dense(n_features, activation='relu')(dense)
 	model = Model(inputs=visible1, outputs=output)
 	model.compile(optimizer='adam', loss='mse')
 	return model
@@ -956,6 +958,13 @@ model = machine_model(n_steps=n_steps, n_features=n_features,
 
 print(model.summary())
 
+#GPU
+#from tensorflow.python.client import device_lib
+#print(device_lib.list_local_devices())
+
+#tf.debugging.set_log_device_placement(True)
+
+#with tf.device('/GPU:0'):
 #start of the measuring
 #time measuring in python
 profiler = cProfile.Profile()
@@ -963,13 +972,13 @@ profiler.enable()
 tracemalloc.start()
 # fit model
 #add batch size
-history = model.fit(X_train, y_train, epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
+history = model.fit(X_train, y_train, batch_size=BATCH_SIZE , epochs=EPOCHS, verbose=1, validation_data=(X_test, y_test))
 print("Memory Usage: ")
 print(tracemalloc.get_traced_memory())
 tracemalloc.stop()
 profiler.disable()
 #profiler.print_stats(sort='cumulative')
-profiler.dump_stats('profiler_results.prof')
+profiler.dump_stats(f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof')
 #end of the measuring
 
 
@@ -1016,10 +1025,10 @@ flat_coef, _ = spearmanr(test_flattened[:76, :].flatten(), yhat_flattened.flatte
 print("Spearman Correlation: ", flat_coef)
 
 #Coefficient of determination R
-R_square = np.absolute(coef_P * flat_coef) #R^2 cannot be a negative value
+R_square = np.absolute(coef_P * coef_P) #R^2 cannot be a negative value
 print("Coefficient of Determination: ", R_square)
 
 import pstats
-stats = pstats.Stats('profiler_results.prof')
+stats = pstats.Stats(f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof')
 stats.sort_stats('cumulative').print_stats()
 # %%
