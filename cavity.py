@@ -895,7 +895,8 @@ EPOCHS = 100
 FILTER_SIZE = 64
 DENSE_SIZE = 64
 BATCH_SIZE = 32 #Default is 32
-ITERATION = 1
+ITERATION = 5
+FILE_NAME = f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof'
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
 	# first input model
@@ -978,7 +979,7 @@ print(tracemalloc.get_traced_memory())
 tracemalloc.stop()
 profiler.disable()
 #profiler.print_stats(sort='cumulative')
-profiler.dump_stats(f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof')
+profiler.dump_stats(FILE_NAME)
 #end of the measuring
 
 
@@ -1029,6 +1030,6 @@ R_square = np.absolute(coef_P * coef_P) #R^2 cannot be a negative value
 print("Coefficient of Determination: ", R_square)
 
 import pstats
-stats = pstats.Stats(f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof')
+stats = pstats.Stats(FILE_NAME)
 stats.sort_stats('cumulative').print_stats()
 # %%
