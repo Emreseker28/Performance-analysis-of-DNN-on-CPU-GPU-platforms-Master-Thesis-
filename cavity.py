@@ -887,8 +887,6 @@ test_dataset = np.concatenate((test_seq1, test_seq2, test_seq3, test_seq4, test_
 							   test_seq31, test_seq32, test_seq33, test_seq34, test_seq35,
 							   test_seq36, test_seq37, test_seq38, test_seq40, test_seq40,
 							   ), axis=0)
-print('dataset.shape', dataset.shape)
-print('test_dataset.shape', test_dataset.shape)
 
 #constants
 EPOCHS = 100
@@ -899,19 +897,10 @@ ITERATION = 5
 FILE_NAME = f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof'
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
-	# first input model
-	#start from low number of filters, kernels and then start to increase
 	visible1 = Input(shape=(n_steps, n_features))
 	cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(visible1)
 	cnn1 = MaxPooling1D(pool_size=n_steps)(cnn1)
-	#cnn1 = Flatten()(cnn1)
-	# second input model
-	#visible2 = Input(shape=(n_steps, n_features))
 	cnn2 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
-	#cnn2 = MaxPooling1D(pool_size=2)(cnn2)
-	#flt = Flatten()(cnn2)
-	# merge input models
-	#merge = Concatenate(axis=1)([cnn1, cnn2])
 	dense = Dense(dense_size, activation='relu')(cnn2)
 	output = Dense(n_features, activation='relu')(dense)
 	model = Model(inputs=visible1, outputs=output)
@@ -946,10 +935,6 @@ y = np.array(y).reshape( samples*2, 1, n_features )
 test = np.array(test)
 test = test.reshape(-1, 2, n_features)
 
-print('X.shape', X.shape)
-print('y.shape', y.shape)
-print('n_features', n_features)
-
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -983,8 +968,6 @@ profiler.dump_stats(FILE_NAME)
 #end of the measuring
 
 
-# demonstrate prediction
-#here as well
 yhat = model.predict(test, verbose=1)
 print(yhat)
 
