@@ -893,8 +893,8 @@ EPOCHS = 100
 FILTER_SIZE = 64
 DENSE_SIZE = 64
 BATCH_SIZE = 32 #Default is 32
-ITERATION = 5
-FILE_NAME = f'profiler_results_epochs{EPOCHS}_batch_{BATCH_SIZE}_iteration_{ITERATION}.prof'
+ITERATION = 1
+FILE_NAME = f'profiler_results_epochs{EPOCHS}_dense_size_{DENSE_SIZE}_iteration_{ITERATION}.prof'
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
 	visible1 = Input(shape=(n_steps, n_features))
