@@ -894,14 +894,24 @@ FILTER_SIZE = 64
 DENSE_SIZE = 64
 BATCH_SIZE = 32 #Default is 32
 ITERATION = 1
-FILE_NAME = f'profiler_results_epochs{EPOCHS}_dense_size_{DENSE_SIZE}_iteration_{ITERATION}.prof'
+FILE_NAME = f'profiler_results_epochs{EPOCHS}_batch_size_{BATCH_SIZE}_iteration_{ITERATION}.prof'
 
 def machine_model(n_steps, n_features, filter_size, dense_size):
 	visible1 = Input(shape=(n_steps, n_features))
 	cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(visible1)
+	#cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
+	#cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
+	#cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
+	#cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
+	#cnn1 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
 	cnn1 = MaxPooling1D(pool_size=n_steps)(cnn1)
 	cnn2 = Conv1D(filters=filter_size, kernel_size=1, activation='relu')(cnn1)
 	dense = Dense(dense_size, activation='relu')(cnn2)
+	#dense = Dense(dense_size, activation='relu')(dense)
+	#dense = Dense(dense_size, activation='relu')(dense)
+	#dense = Dense(dense_size, activation='relu')(dense)
+	#dense = Dense(dense_size, activation='relu')(dense)
+	#dense = Dense(dense_size, activation='relu')(dense)
 	output = Dense(n_features, activation='relu')(dense)
 	model = Model(inputs=visible1, outputs=output)
 	model.compile(optimizer='adam', loss='mse')
