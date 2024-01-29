@@ -930,7 +930,7 @@ for i in range(samples):
 	X.append(datasetU[i:i+n_steps])
 	y.append( dataset[-1] )
 
-for z in range(samples):
+#for z in range(samples):
 	y2.append( datasetU[-1] )
 	
 for j in range(test_samples):
@@ -941,7 +941,7 @@ X = np.array(X)
 n_features = X.shape[2]
 
 y = np.concatenate((y,y2), axis=0)
-y = np.array(y).reshape( samples*2, 1, n_features )
+y = np.array(y).reshape( samples * 2, 1, n_features )
 test = np.array(test)
 test = test.reshape(-1, 2, n_features)
 
@@ -989,8 +989,7 @@ test_flattened = test.reshape(-1, test.shape[-1]) # ndarray (76,400)
 yhat_flattened = yhat.reshape(-1, yhat.shape[-1]) # ndarray (38, 400)
 mse = mean_squared_error(test_flattened[:76, :], yhat_flattened) #taking the first 3 rows to match the sizes
 mae = mean_absolute_error(test_flattened[:76, :], yhat_flattened)
-print('MSE: ', mse)
-print('MAE: ', mae)
+
 
 
 #plotting the figures
@@ -1004,23 +1003,27 @@ epochs_range = range(1, EPOCHS+1)
 plt.plot(epochs_range, loss, 'r', label='Training loss')
 plt.plot(epochs_range, val_loss, 'b', label='Validation loss')
 plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
 plt.legend()
 plt.show()
 
+print('MSE: %.3f' % mse)
+print('MAE: %.3f' % mae)
 #pearson correlation
 from scipy.stats import pearsonr
 coef_P, _ = pearsonr(test_flattened[:76, :].flatten(), yhat_flattened.flatten())
-print("Pearson Correlation: ", coef_P)
+print("Pearson Correlation: %.3f" % coef_P)
 
 #Spearman correlation
 from scipy.stats import spearmanr
 coef, p = spearmanr(test_flattened[:76, :], yhat_flattened)
 flat_coef, _ = spearmanr(test_flattened[:76, :].flatten(), yhat_flattened.flatten())
-print("Spearman Correlation: ", flat_coef)
+print("Spearman Correlation: %.3f" % flat_coef)
 
 #Coefficient of determination R
 R_square = np.absolute(coef_P * coef_P) #R^2 cannot be a negative value
-print("Coefficient of Determination: ", R_square)
+print("Coefficient of Determination: %.3f" % R_square)
 
 import pstats
 stats = pstats.Stats(FILE_NAME)
